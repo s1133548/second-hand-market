@@ -1,33 +1,60 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Second-Hand Market</title>
-  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <header>
     <h1>Second-Hand Market</h1>
     <nav>
-      <ul class="nav-links">
-        <li><a href="index.html">Home</a></li>
-        <li><a href="donate.html">Donate</a></li>
-        <li><a href="sell.html">Sell</a></li>
-        <li><a href="about.html">About</a></li>
-        <li><a href="contact.html">Contact</a></li>
-      </ul>
+      <a href="index.html" class="active">Home</a>
+      <a href="browse.html">Browse Items</a>
+      <a href="post-item.html">Give or Sell an Item</a>
+      <a href="about.html">About</a>
+      <a href="contact.html">Contact</a>
     </nav>
   </header>
 
-  <section class="hero">
-    <h2>Promoting Sustainability Through Reuse</h2>
-    <p>Buy, sell, or donate second-hand items to support SDG 12 — Responsible Consumption and Production.</p>
-    <a href="donate.html" class="btn">Get Started</a>
-  </section>
+  <main>
+    <section class="intro">
+      <h2>Welcome to the Second-Hand Market 🌍</h2>
+      <p>
+        Join us in supporting <strong>SDG 12: Responsible Consumption and Production</strong> 
+        by giving, selling, or finding second-hand goods that deserve a second life.
+      </p>
+    </section>
+
+    <section class="login-section">
+      <h3>Receiver Login</h3>
+      <form action="#" method="POST">
+        <input type="text" placeholder="Username" required>
+        <input type="password" placeholder="Password" required>
+        <button type="submit">Login</button>
+      </form>
+      <p class="small-text">Receivers log in to view item locations and contact givers.</p>
+    </section>
+
+    <section class="giver-section">
+      <h3>Want to Donate or Sell?</h3>
+      <p>If you have items to give away or sell, click below to post your item!</p>
+      <a href="post-item.html" class="button">Give or Sell an Item</a>
+    </section>
+
+    <section class="quick-links">
+      <h3>Explore More</h3>
+      <div class="links-container">
+        <a href="browse.html" class="link-box">🛒 Browse Items</a>
+        <a href="about.html" class="link-box">📘 About SDG 12</a>
+        <a href="contact.html" class="link-box">✉️ Contact Us</a>
+      </div>
+    </section>
+  </main>
 
   <footer>
-    <p>© 2025 Second-Hand Market | Designed by Nelile Simelane</p>
+    <p>© 2025 Second-Hand Market | Promoting SDG 12: Responsible Consumption and Production</p>
   </footer>
 </body>
 </html>
