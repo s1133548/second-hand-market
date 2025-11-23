@@ -1,0 +1,262 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Donate or Sell an Item — Second-Hand Market</title>
+
+  <!-- Simple CSS (mobile friendly) -->
+  <style>
+    :root{--maxw:900px;--accent:#2f8f4f}
+    body{font-family:system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial;background:#f5f8f9;margin:0;padding:24px;display:flex;justify-content:center}
+    .wrap{width:100%;max-width:var(--maxw);background:#fff;padding:28px;border-radius:10px;box-shadow:0 6px 20px rgba(12,30,40,0.06)}
+    h1{margin:0 0 18px;text-align:center;color:#162029}
+    .field{margin-bottom:14px}
+    input[type="text"], input[type="email"], input[type="number"], select, textarea {
+      width:100%; padding:14px 12px; border-radius:8px; border:1px solid #e3e8eb; box-sizing:border-box; font-size:15px;
+      background:#fbfdfe;
+    }
+    textarea{min-height:110px; resize:vertical}
+    .row{display:flex;gap:12px}
+    .row .col{flex:1}
+    .file-label{display:flex;justify-content:space-between;align-items:center;padding:14px;border-radius:8px;border:1px solid #e9eef0;background:#fff}
+    button{background:var(--accent);color:#fff;padding:12px 18px;border-radius:10px;border:0;font-size:16px;cursor:pointer}
+    button[disabled]{opacity:.6;cursor:default}
+    .note{font-size:13px;color:#6b757a;margin-top:6px}
+    .alert{padding:12px;border-radius:8px;margin-bottom:12px}
+    .alert.success{background:#e9f7ee;color:#0b6b2f}
+    .alert.error{background:#fbe9e9;color:#7a1717}
+    @media (max-width:600px){body{padding:14px}.wrap{padding:18px}}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>Donate or Sell an Item</h1>
+
+    <div id="msg"></div>
+
+    <form id="donateForm">
+      <div class="field">
+        <input id="fullName" type="text" placeholder="Full Name" required />
+      </div>
+
+      <div class="field">
+        <input id="email" type="email" placeholder="Email address" required />
+      </div>
+
+      <div class="field">
+        <input id="itemName" type="text" placeholder="Item name" required />
+      </div>
+
+      <div class="field">
+        <select id="category" required>
+          <option value="" disabled selected>Select category</option>
+          <option>Clothes</option>
+          <option>Electronics</option>
+          <option>Furniture</option>
+          <option>Kitchenware</option>
+          <option>Books</option>
+          <option>Other</option>
+        </select>
+      </div>
+
+      <div class="row">
+        <div class="col field">
+          <input id="location" type="text" placeholder="Location (City/Town)" required />
+        </div>
+        <div class="col field">
+          <input id="price" type="number" min="0" step="0.01" placeholder="Price (0 = donation)" value="0" required />
+        </div>
+      </div>
+
+      <div class="field">
+        <textarea id="description" placeholder="Short description" required></textarea>
+      </div>
+
+      <div class="field">
+        <label class="file-label">
+          <span id="fileName">Choose an image (max 5 MB)</span>
+          <input id="imageUpload" type="file" accept="image/*" style="display:none" />
+          <button type="button" id="chooseBtn" style="background:#fff;color:var(--accent);border:1px solid #e0e6e9;padding:8px 12px;border-radius:8px;">Choose file</button>
+        </label>
+        <div class="note">Image recommended. Max 5MB. JPEG/PNG preferred.</div>
+      </div>
+
+      <div style="margin-top:16px; display:flex; gap:12px; align-items:center">
+        <button id="submitBtn" type="submit">Submit Item</button>
+        <div id="loading" style="display:none">Uploading…</div>
+      </div>
+    </form>
+  </div>
+
+  <!-- Firebase v9 (modular) and Supabase (ESM) -->
+  <script type="module">
+    // ======== CONFIG: Replace these placeholders with your real keys ========
+    const FIREBASE_CONFIG = {
+      apiKey: "AIzaSyDr1I8gvzidt-RTFCDuLvv_pxwjUQpuvVg",
+      authDomain: "second-hand-market-ac9f1.firebaseapp.com",
+      projectId: "second-hand-market-ac9f1",
+      storageBucket: "second-hand-market-ac9f1.firebasestorage.app", // e.g. your-app.appspot.com
+      messagingSenderId: "346650617019",
+      appId: "1:346650617019:web:2ed646f43df061ec72b59e"
+    };
+
+    const SUPABASE_URL = "https://jdxdqmggyxhdycfmvygw.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpkeGRxbWdneXhoZHljZm12eWd3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjM0OTAxNzYsImV4cCI6MjA3OTA2NjE3Nn0.HFwu8W_oAsY-enrdYbe-pqBYaWY6TECAruW-yINYNrE";
+    // =======================================================================
+
+    // Import Firebase SDK functions
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+    import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
+    import { getStorage, ref as storageRef, uploadBytesResumable, getDownloadURL } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-storage.js";
+
+    // Import Supabase
+    import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
+
+    // Initialize Firebase
+    const app = initializeApp(FIREBASE_CONFIG);
+    const auth = getAuth(app);
+    const storage = getStorage(app);
+
+    // Initialize Supabase
+    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    // DOM nodes
+    const form = document.getElementById('donateForm');
+    const imageInput = document.getElementById('imageUpload');
+    const chooseBtn = document.getElementById('chooseBtn');
+    const fileName = document.getElementById('fileName');
+    const submitBtn = document.getElementById('submitBtn');
+    const loadingText = document.getElementById('loading');
+    const msgBox = document.getElementById('msg');
+
+    // Choose file button behaviour
+    chooseBtn.addEventListener('click', () => imageInput.click());
+    imageInput.addEventListener('change', () => {
+      const f = imageInput.files[0];
+      fileName.textContent = f ? f.name : 'Choose an image (max 5 MB)';
+    });
+
+    // helper to show messages
+    function showMessage(type, text) {
+      msgBox.innerHTML = `<div class="alert ${type === 'success' ? 'success' : 'error'}">${text}</div>`;
+      setTimeout(()=> { msgBox.innerHTML = ''; }, 6000);
+    }
+
+    // Sign in anonymously to Firebase (required for storage rules where write requires auth)
+    async function ensureAnonymousAuth() {
+      if (!auth.currentUser) {
+        try {
+          await signInAnonymously(auth);
+          console.log('Signed in anonymously to Firebase');
+        } catch (err) {
+          console.error('Firebase anonymous sign-in failed', err);
+          throw err;
+        }
+      }
+    }
+
+    // Upload image to Firebase Storage and get download URL
+    async function uploadImageAndGetUrl(file) {
+      if (!file) return null;
+      if (file.size > 5 * 1024 * 1024) throw new Error('Image too large. Max 5 MB.');
+
+      const timestamp = Date.now();
+      const cleanName = file.name.replace(/\s+/g,'_');
+      const path = `items/${timestamp}_${cleanName}`;
+      const sRef = storageRef(storage, path);
+
+      return new Promise((resolve, reject) => {
+        const uploadTask = uploadBytesResumable(sRef, file);
+        uploadTask.on('state_changed',
+          (snapshot) => {
+            // optionally you can calculate progress here
+          },
+          (error) => reject(error),
+          async () => {
+            try {
+              const url = await getDownloadURL(uploadTask.snapshot.ref);
+              resolve(url);
+            } catch (e) {
+              reject(e);
+            }
+          }
+        );
+      });
+    }
+
+    // Form submit handler
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      submitBtn.disabled = true;
+      loadingText.style.display = 'inline';
+      msgBox.innerHTML = '';
+
+      try {
+        // gather fields
+        const donor_name = document.getElementById('fullName').value.trim();
+        const donor_email = document.getElementById('email').value.trim();
+        const name = document.getElementById('itemName').value.trim();
+        const category = document.getElementById('category').value;
+        const location = document.getElementById('location').value.trim();
+        const priceRaw = document.getElementById('price').value;
+        const price = parseFloat(priceRaw) || 0;
+        const description = document.getElementById('description').value.trim();
+
+        // simple validation
+        if (!donor_name || !donor_email || !name || !category || !location) {
+          throw new Error('Please fill all required fields.');
+        }
+
+        // sign-in anonymously to firebase so we can upload to storage
+        await ensureAnonymousAuth();
+
+        // upload image
+        const file = imageInput.files[0];
+        let image_url = null;
+        if (file) {
+          image_url = await uploadImageAndGetUrl(file);
+        }
+
+        // item type
+        const type = (price === 0) ? 'Donation' : 'For Sale';
+
+        // build row to insert to supabase
+        const row = {
+          name,
+          description,
+          category,
+          price,
+          location,
+          image_url,
+          donor_name,
+          donor_email,
+          type
+        };
+
+        // insert into supabase
+        const { data, error } = await supabase
+          .from('items')
+          .insert([row]);
+
+        if (error) {
+          console.error('Supabase insert error', error);
+          throw new Error('Failed to save item. ' + (error.message || ''));
+        }
+
+        // success -> clear form & show message
+        form.reset();
+        fileName.textContent = 'Choose an image (max 5 MB)';
+        showMessage('success', `Item saved as "${type}". Thank you!`);
+      } catch (err) {
+        console.error(err);
+        showMessage('error', err.message || 'An error occurred.');
+      } finally {
+        submitBtn.disabled = false;
+        loadingText.style.display = 'none';
+      }
+    });
+
+  </script>
+</body>
+</html>
