@@ -1,0 +1,289 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Second-Hand Market</title>
+
+<style>
+  :root{
+    --accent:#2f8f4f;
+    --text:#163033;
+    --muted:#8ba0a4;
+    --bg:#f4f7f8;
+    --gray:#e8edef;
+  }
+
+  body{
+    margin:0;
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial;
+    background:var(--bg);
+    color:var(--text);
+  }
+
+  /* NAVBAR */
+  .navbar{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:14px 24px;
+    background:#fff;
+    box-shadow:0 2px 6px rgba(0,0,0,0.05);
+    position:sticky;
+    top:0;
+    z-index:10;
+  }
+  .nav-links{
+    display:flex;
+    gap:16px;
+  }
+  .nav-links a{
+    text-decoration:none;
+    padding:8px 12px;
+    border-radius:8px;
+    font-weight:600;
+    color:var(--text);
+  }
+  .nav-links a.active{
+    background:var(--accent);
+    color:white;
+  }
+  .nav-links a:hover{
+    background:var(--gray);
+  }
+  .login-btn{
+    padding:8px 14px;
+    background:var(--gray);
+    border-radius:8px;
+    font-weight:600;
+    text-decoration:none;
+    color:var(--text);
+  }
+  .login-btn:hover{
+    background:#d9e1e3;
+  }
+
+  /* HERO BANNER */
+  .hero{
+    height:300px;
+    background:url('https://images.unsplash.com/photo-1555041469-a586c61ea9bc?auto=format&fit=crop&w=1400&q=80');
+    background-size:cover;
+    background-position:center;
+    position:relative;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+  }
+  .hero-overlay{
+    position:absolute;
+    inset:0;
+    background:rgba(0,0,0,0.45);
+  }
+  .hero-content{
+    position:relative;
+    text-align:center;
+    color:white;
+    z-index:2;
+  }
+  .hero-title{
+    font-size:34px;
+    font-weight:800;
+    margin:0 0 12px 0;
+  }
+
+  /* SEARCH BAR */
+  .search-wrap{
+    margin-top:10px;
+    display:flex;
+    justify-content:center;
+  }
+  .search-box{
+    width:80%;
+    max-width:520px;
+    background:white;
+    padding:10px 14px;
+    border-radius:12px;
+    display:flex;
+    gap:10px;
+    align-items:center;
+    border:1px solid #dce3e6;
+  }
+  .search-label{
+    font-weight:600;
+  }
+  #homeSearch{
+    flex:1;
+    border:0;
+    outline:none;
+    font-size:16px;
+  }
+
+  /* ITEMS SECTION */
+  .section{
+    padding:26px 20px;
+  }
+  .section h2{
+    margin:0 0 16px 0;
+    font-size:24px;
+  }
+
+  .items-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fill,minmax(220px,1fr));
+    gap:16px;
+  }
+  .card{
+    background:white;
+    border-radius:12px;
+    padding:12px;
+    box-shadow:0 4px 10px rgba(0,0,0,0.04);
+    cursor:pointer;
+    transition:0.2s;
+    display:flex;
+    flex-direction:column;
+  }
+  .card:hover{
+    transform:translateY(-5px);
+  }
+  .card img{
+    height:150px;
+    width:100%;
+    object-fit:cover;
+    border-radius:8px;
+    background:#d8dee0;
+  }
+  .title{
+    font-weight:700;
+    margin-top:10px;
+  }
+  .meta{
+    display:flex;
+    justify-content:space-between;
+    margin-top:6px;
+  }
+  .price{ color:var(--accent); font-weight:700; }
+  .location{ color:var(--muted); font-size:13px; }
+
+  /* SEE MORE BUTTON */
+  .see-more{
+    margin-top:18px;
+    text-align:center;
+  }
+  .see-more a{
+    padding:10px 20px;
+    background:var(--accent);
+    color:white;
+    display:inline-block;
+    text-decoration:none;
+    border-radius:10px;
+    font-weight:600;
+  }
+
+  /* FOOTER */
+  footer{
+    text-align:center;
+    padding:20px;
+    margin-top:20px;
+    color:var(--muted);
+  }
+</style>
+</head>
+
+<body>
+
+<!-- NAVBAR -->
+<div class="navbar">
+  <div class="nav-links">
+    <a href="index.html" class="active">Home</a>
+    <a href="browse.html">Browse</a>
+    <a href="donate.html">Donate</a>
+    <a href="reservations.html">Reservations</a>
+    <a href="about.html">About</a>
+    <a href="contact.html">Contact</a>
+  </div>
+  <a class="login-btn" href="login.html">Login</a>
+</div>
+
+<!-- HERO BANNER -->
+<div class="hero">
+  <div class="hero-overlay"></div>
+
+  <div class="hero-content">
+    <h1 class="hero-title">Give it a Second Life</h1>
+
+    <div class="search-wrap">
+      <div class="search-box">
+        <span class="search-label">Search:</span>
+        <input id="homeSearch" type="text" placeholder="Clothes, electronics, furniture...">
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ITEMS PREVIEW -->
+<div class="section">
+  <h2>Latest Donations</h2>
+
+  <div id="itemsGrid" class="items-grid"></div>
+
+  <div class="see-more">
+    <a href="browse.html">See More Items</a>
+  </div>
+</div>
+
+<footer>
+  <p>#ReuseReduceRevive</p>
+</footer>
+
+<script type="module">
+  import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
+
+  const supabase = createClient(
+    "https://jdxdqmggyxhdycfmvygw.supabase.co",
+    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpkeGRxbWdneXhoZHljZm12eWd3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjM0OTAxNzYsImV4cCI6MjA3OTA2NjE3Nn0.HFwu8W_oAsY-enrdYbe-pqBYaWY6TECAruW-yINYNrE"
+  );
+
+  const itemsGrid = document.getElementById("itemsGrid");
+
+  async function loadLatest(){
+    const { data } = await supabase
+      .from("items")
+      .select("*")
+      .order("created_at", { ascending:false })
+      .limit(4);
+
+    renderItems(data || []);
+  }
+
+  function renderItems(list){
+    itemsGrid.innerHTML = "";
+    list.forEach(it=>{
+      const div = document.createElement("div");
+      div.className="card";
+      div.innerHTML = `
+        <img src="${it.image_url}">
+        <div class="title">${it.name}</div>
+        <div class="meta">
+          <span class="price">${it.price==0 ? "Free" : "$"+it.price}</span>
+          <span class="location">${it.location||""}</span>
+        </div>
+      `;
+      div.onclick = ()=> window.location.href = "browse.html?item="+it.id;
+      itemsGrid.appendChild(div);
+    });
+  }
+
+  await loadLatest();
+
+  // Search redirect
+  const homeSearch = document.getElementById("homeSearch");
+  homeSearch.addEventListener("keydown", function(e){
+    if(e.key === "Enter"){
+      const q = homeSearch.value.trim();
+      if(q) window.location.href = "browse.html?q=" + encodeURIComponent(q);
+    }
+  });
+</script>
+
+</body>
+</html>
