@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>My Reservations</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<style>
+body{
+  margin:0;
+  font-family: system-ui, Arial;
+  background:#f4f7f8;
+  color:#163033;
+}
+
+.navbar{
+  display:flex;
+  justify-content:space-between;
+  padding:14px 22px;
+  background:#fff;
+  box-shadow:0 2px 6px rgba(0,0,0,0.05);
+}
+
+.navbar a{
+  text-decoration:none;
+  font-weight:600;
+  color:#163033;
+  margin-right:12px;
+}
+
+.container{
+  max-width:900px;
+  margin:30px auto;
+  background:#fff;
+  padding:24px;
+  border-radius:14px;
+}
+
+h2{
+  margin-top:0;
+  margin-bottom:18px;
+}
+
+.reservation{
+  border:1px solid #e0e6e8;
+  border-radius:12px;
+  padding:16px;
+  margin-bottom:14px;
+}
+
+.reservation h3{
+  margin:0 0 8px 0;
+}
+
+.meta{
+  font-size:14px;
+  color:#5f7377;
+}
+
+.badge{
+  display:inline-block;
+  padding:4px 10px;
+  border-radius:999px;
+  font-size:13px;
+  font-weight:600;
+  background:#e6f6ec;
+  color:#2f8f4f;
+}
+
+.empty{
+  text-align:center;
+  color:#8ba0a4;
+  padding:30px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="navbar">
+  <div>
+    <a href="index.html">Home</a>
+    <a href="browse.html">Browse</a>
+    <a href="donate.html">Donate</a>
+    <a href="reservations.html"><strong>Reservations</strong></a>
+  </div>
+  <a href="login.html">Logout</a>
+</div>
+
+<div class="container">
+  <h2>My Reservations</h2>
+  <div id="list"></div>
+</div>
+
+<script type="module">
+import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
+
+const supabase = createClient(
+  "https://jdxdqmggyxhdycfmvygw.supabase.co",
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpkeGRxbWdneXhoZHljZm12eWd3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjM0OTAxNzYsImV4cCI6MjA3OTA2NjE3Nn0.HFwu8W_oAsY-enrdYbe-pqBYaWY6TECAruW-yINYNrE"
+);
+
+const list = document.getElementById("list");
+
+async function checkAuth(){
+  const { data } = await supabase.auth.getUser();
+  if(!data.user){
+    window.location.href = "login.html";
+  }
+  return data.user;
+}
+
+async function loadReservations(user){
+  const { data, error } = await supabase
+    .from("reservations")
+    .select(`
+      pickup_date,
+      created_at,
+      items (
+        name,
+        location,
+        donor_email
+      )
+    `)
+    .eq("receiver_id", user.id)
+    .order("created_at", { ascending:false });
+
+  if(error){
+    list.innerHTML = "<p>Error loading reservations.</p>";
+    return;
+  }
+
+  if(!data || data.length === 0){
+    list.innerHTML = `<div class="empty">You have no reservations yet.</div>`;
+    return;
+  }
+
+  list.innerHTML = "";
+  data.forEach(r=>{
+    const div = document.createElement("div");
+    div.className = "reservation";
+    div.innerHTML = `
+      <h3>${r.items.name}</h3>
+      <div class="meta">📍 ${r.items.location}</div>
+      <div class="meta">📅 Pickup date: ${r.pickup_date}</div>
+      <div class="meta">📧 Donor notified via email</div>
+      <div style="margin-top:8px">
+        <span class="badge">Reserved</span>
+      </div>
+    `;
+    list.appendChild(div);
+  });
+}
+
+const user = await checkAuth();
+await loadReservations(user);
+</script>
+
+</body>
+</html>

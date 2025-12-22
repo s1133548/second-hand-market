@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Donate Item</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<style>
+body {
+  font-family: system-ui, Arial;
+  background: #f4f7f8;
+  padding: 20px;
+}
+
+form {
+  max-width: 600px;
+  margin: auto;
+  background: white;
+  padding: 24px;
+  border-radius: 12px;
+}
+
+input, textarea, select {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 14px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+}
+
+button {
+  background: #2f8f4f;
+  color: white;
+  padding: 12px;
+  border: none;
+  border-radius: 10px;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+#msg {
+  display: none;
+  padding: 10px;
+  margin-bottom: 10px;
+  border-radius: 6px;
+  text-align: center;
+}
+.success { background: #d6ffe0; color: #005f1e; }
+.error { background: #ffd6d6; color: #8a0000; }
+</style>
+</head>
+
+<body>
+
+<form id="donateForm">
+  <h2>Donate / Sell an Item</h2>
+
+  <div id="msg"></div>
+
+  <input type="text" id="title" placeholder="Item name" required>
+  <textarea id="description" placeholder="Short description" required></textarea>
+
+  <select id="category" required>
+    <option value="">Select category</option>
+    <option>Clothes</option>
+    <option>Furniture</option>
+    <option>Electronics</option>
+    <option>Books</option>
+    <option>Other</option>
+  </select>
+
+  <input type="number" id="price" placeholder="Price (0 for donation)" required>
+  <input type="text" id="location" placeholder="Location" required>
+
+  <input type="file" id="image" accept="image/*" required>
+
+  <button type="submit">Submit Item</button>
+</form>
+
+<script type="module">
+import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
+
+const supabase = createClient(
+  "https://jdxdqmggyxhdycfmvygw.supabase.co",
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpkeGRxbWdneXhoZHljZm12eWd3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjM0OTAxNzYsImV4cCI6MjA3OTA2NjE3Nn0.HFwu8W_oAsY-enrdYbe-pqBYaWY6TECAruW-yINYNrE"
+);
+
+const form = document.getElementById("donateForm");
+const msg = document.getElementById("msg");
+
+function showMsg(text, type) {
+  msg.textContent = text;
+  msg.className = type;
+  msg.style.display = "block";
+}
+
+form.addEventListener("submit", async (e) => {
+  e.preventDefault();
+
+  msg.style.display = "none";
+
+  const file = document.getElementById("image").files[0];
+  const fileName = `${Date.now()}-${file.name}`;
+
+  // 1️⃣ Upload image
+  const { error: uploadError } = await supabase
+    .storage
+    .from("item-images")
+    .upload(fileName, file);
+
+  if (uploadError) {
+    showMsg(uploadError.message, "error");
+    return;
+  }
+
+  // 2️⃣ Get image URL
+  const { data } = supabase
+    .storage
+    .from("item-images")
+    .getPublicUrl(fileName);
+
+  const imageUrl = data.publicUrl;
+
+  // 3️⃣ Save item
+  const { error } = await supabase
+    .from("items")
+    .insert({
+      title: title.value,
+      description: description.value,
+      category: category.value,
+      price: price.value,
+      location: location.value,
+      image_url: imageUrl
+    });
+
+  if (error) {
+    showMsg(error.message, "error");
+  } else {
+    showMsg("Thank you for lending a hand 💚", "success");
+    form.reset();
+  }
+});
+</script>
+
+</body>
+</html>
