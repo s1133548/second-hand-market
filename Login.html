@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Login | Second-Hand Market</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<style>
+body{
+  margin:0;
+  font-family:system-ui,Arial;
+  background:#f4f7f8;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  height:100vh;
+}
+.box{
+  background:#fff;
+  padding:30px;
+  border-radius:14px;
+  width:100%;
+  max-width:380px;
+  box-shadow:0 8px 24px rgba(0,0,0,.08);
+}
+h2{text-align:center;margin-bottom:20px}
+input{
+  width:100%;
+  padding:12px;
+  margin-bottom:12px;
+  border-radius:8px;
+  border:1px solid #ccc;
+}
+button{
+  width:100%;
+  padding:12px;
+  border-radius:10px;
+  border:none;
+  background:#2f8f4f;
+  color:white;
+  font-size:16px;
+  font-weight:600;
+  cursor:pointer;
+}
+.google{
+  background:#fff;
+  border:1px solid #ddd;
+  color:#333;
+  margin-top:10px;
+}
+.msg{
+  text-align:center;
+  margin-bottom:12px;
+  color:#b00020;
+}
+.toggle{
+  text-align:center;
+  margin-top:10px;
+  color:#2f8f4f;
+  cursor:pointer;
+  font-weight:600;
+}
+</style>
+</head>
+
+<body>
+
+<div class="box">
+  <h2 id="title">Login</h2>
+  <div class="msg" id="msg"></div>
+
+  <input type="email" id="email" placeholder="Email">
+  <input type="password" id="password" placeholder="Password">
+
+  <button id="submitBtn">Login</button>
+  <button class="google" id="googleBtn">Continue with Google</button>
+
+  <div class="toggle" id="toggleMode">Create an account</div>
+</div>
+
+<script type="module">
+import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
+
+const supabase = createClient(
+  "https://jdxdqmggyxhdycfmvygw.supabase.co",
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpkeGRxbWdneXhoZHljZm12eWd3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjM0OTAxNzYsImV4cCI6MjA3OTA2NjE3Nn0.HFwu8W_oAsY-enrdYbe-pqBYaWY6TECAruW-yINYNrE"
+);
+
+let mode = "login";
+
+const title = document.getElementById("title");
+const submitBtn = document.getElementById("submitBtn");
+const toggle = document.getElementById("toggleMode");
+const msg = document.getElementById("msg");
+
+toggle.onclick = () => {
+  mode = mode === "login" ? "signup" : "login";
+  title.innerText = mode === "login" ? "Login" : "Sign Up";
+  submitBtn.innerText = mode === "login" ? "Login" : "Create Account";
+  toggle.innerText = mode === "login"
+    ? "Create an account"
+    : "Already have an account?";
+  msg.innerText = "";
+};
+
+submitBtn.onclick = async () => {
+  const email = email.value;
+  const password = password.value;
+
+  let res;
+  if (mode === "login") {
+    res = await supabase.auth.signInWithPassword({ email, password });
+  } else {
+    res = await supabase.auth.signUp({ email, password });
+  }
+
+  if (res.error) {
+    msg.innerText = res.error.message;
+  } else {
+    window.location.href = "index.html";
+  }
+};
+
+document.getElementById("googleBtn").onclick = async () => {
+  await supabase.auth.signInWithOAuth({
+    provider: "google",
+    options: { redirectTo: window.location.origin }
+  });
+};
+</script>
+
+</body>
+</html>
